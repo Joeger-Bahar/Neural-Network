@@ -14,33 +14,29 @@ Network& Network::withLayers(int inputCount, int hiddenLayerCount, int hiddenLay
 	int radius = 35;
 
 	// Calculate the horizontal distance between the layers in the style of css flexbox space around
-	//int totalLayerWidth = radius * (hiddenLayerCount + 2);
-	//int horizontalDistance = (screenWidth - totalLayerWidth) / (hiddenLayerCount + 2 - 1);
-	int neuronWidth = 2 * radius;  // Diameter of neurons
-	int totalNeuronWidth = (hiddenLayerCount + 2) * neuronWidth;
-	int padding = (screenWidth - totalNeuronWidth) / 4;
-
-	int horizontalDistance = (screenWidth - 2 * radius) / (hiddenLayerCount + 1);
-
-	// Calculate x positions for neurons in the input layer
-	int inputLayerX = padding + radius;
+	int neuronWidth = radius * 2;
+	int spaceAvailable = screenWidth - (neuronWidth * (hiddenLayerCount + 2));
+	spaceAvailable -= neuronWidth; // Subtract the radius of the first and last neuron
+	int horizontalDistance = spaceAvailable / (hiddenLayerCount + 2);
+	std::cout << horizontalDistance << std::endl;
 
 	// Create the input layer
 	for (int i = 0; i < inputCount; i++)
 	{
 		int verticalDistance = screenHeight / (inputCount + 1);
-		neurons[0].push_back(Neuron({ static_cast<float>(inputLayerX), static_cast<float>((i + 1) * verticalDistance) }, Math::Random(0.0f, 1.0f), 0.0f, 2, radius));
+		neurons[0].push_back(Neuron({ static_cast<float>((neuronWidth)), static_cast<float>((i + 1) * verticalDistance) }, Math::Random(0.0f, 1.0f), 0.0f, 2, radius));
 	}
 
-	int currentX = inputLayerX + horizontalDistance;
+	int currentX = horizontalDistance + neuronWidth;
 	// Create the hidden layers
 	for (int i = 0; i < hiddenLayerCount; i++)
 	{
 		for (int j = 0; j < hiddenLayerSize; j++)
 		{
 			int verticalDistance = screenHeight / (hiddenLayerSize + 1);
-			neurons[i + 1].push_back(Neuron({ static_cast<float>(currentX) + radius * 2, static_cast<float>((j + 1) * verticalDistance) }, Math::Random(0.0f, 1.0f), 0.0f, 2, radius));
-			currentX += horizontalDistance;
+			neurons[i + 1].push_back(Neuron({ static_cast<float>(currentX + neuronWidth), static_cast<float>((j + 1) * verticalDistance) }, Math::Random(0.0f, 1.0f), 0.0f, 2, radius));
+			currentX += horizontalDistance + neuronWidth;
+			std::cout << currentX << std::endl;
 		}
 	}
 
@@ -48,10 +44,10 @@ Network& Network::withLayers(int inputCount, int hiddenLayerCount, int hiddenLay
 	for (int i = 0; i < outputCount; i++)
 	{
 		int verticalDistance = screenHeight / (outputCount + 1);
-		neurons[hiddenLayerCount + 1].emplace_back(Neuron({ static_cast<float>(inputLayerX + totalNeuronWidth - radius) + radius * 2, static_cast<float>((i + 1) * verticalDistance) }, Math::Random(0.0f, 1.0f), 0.0f, 2, radius));
+		neurons[hiddenLayerCount + 1].emplace_back(Neuron({ static_cast<float>(currentX + neuronWidth), static_cast<float>((i + 1) * verticalDistance) }, Math::Random(0.0f, 1.0f), 0.0f, 2, radius));
 	}
 
-	int totalNeurons = inputCount + hiddenLayerCount * hiddenLayerSize + outputCount;
+
 	weights.resize(neurons.size() - 1);
 	for (size_t i = 0; i < weights.size(); ++i)
 	{

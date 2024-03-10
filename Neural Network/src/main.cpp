@@ -22,7 +22,7 @@ int main(int argv, char* argc[])
 	WindowManager window("Neural Network", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_HEIGHT, SCREEN_WIDTH, SDL_WINDOW_RESIZABLE);
 
 	// Create a network with 2 input nodes, 2 hidden layers, 1 node per layer, 1 output node, and a screen size of 720x720
-	Network network = Network(SCREEN_WIDTH, SCREEN_HEIGHT).withLayers(5, 7, 1, 1); // Problems with rendering nodes: 5, 7, 1, 1
+	Network network = Network(SCREEN_WIDTH, SCREEN_HEIGHT).withLayers(7, 6, 5, 3); // Spacing between front and back ends uneven
 	network.connectNodes();
 
 	std::string inputString = "";
