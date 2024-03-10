@@ -10,7 +10,7 @@ public:
 	WindowManager(const char* title, int x, int y, int w, int h, uint32_t flags)
 	{
 		window = SDL_CreateWindow(title, x, y, w, h, flags);
-		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	}
 
 	void checkEvents()

@@ -46,5 +46,8 @@
     <ClInclude Include="src\math.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\time.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

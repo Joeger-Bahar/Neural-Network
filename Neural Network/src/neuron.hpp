@@ -18,6 +18,6 @@ public:
 	void render(SDL_Renderer* renderer, TTF_Font* font);
 
 	SDL_FPoint coords;
-	float activation, bias;
+	float activation, bias, gradient;
 	int radius, layer;
 };

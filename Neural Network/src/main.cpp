@@ -1,12 +1,13 @@
 #include <iostream>
-#include <conio.h>
 #include <string>
+#include <vector>
 
 #include "SDL.h"
 #include "SDL_ttf.h"
 
 #include "window_manager.hpp"
 #include "network.hpp"
+#include "time.hpp"
 
 constexpr int SCREEN_WIDTH = 800;
 constexpr int SCREEN_HEIGHT = 800;
@@ -21,37 +22,30 @@ int main(int argv, char* argc[])
 
 	WindowManager window("Neural Network", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_HEIGHT, SCREEN_WIDTH, SDL_WINDOW_RESIZABLE);
 
-	// Create a network with 2 input nodes, 2 hidden layers, 1 node per layer, 1 output node, and a screen size of 720x720
-	Network network = Network(SCREEN_WIDTH, SCREEN_HEIGHT).withLayers(7, 6, 5, 3); // Spacing between front and back ends uneven
+	Network network = Network(SCREEN_WIDTH, SCREEN_HEIGHT).withLayers(2, 15, 15, 1); // Spacing between front and back ends uneven
 	network.connectNodes();
 
+	bool runNetwork = 1;
+	
+	int totalCalculated = 0;
+
+	srand(time(NULL));
 	std::string inputString = "";
 	while (1)
 	{
-		window.update();
-		if (window.quit)
-			return 0;
-		window.present(&network);
-		if (_kbhit())
-		{
-			auto key = _getch();
+		network.forwardPropagate();
 
-			if (isdigit(key) || key == '.')
-			{
-				inputString += key;
-			}
-			else if (key == '\r')
-			{
-				try {
-					double number = std::stod(inputString);
-					network.setActivation(number);
-					inputString.clear(); // Clear the input buffer
-				}
-				catch (const std::invalid_argument& e) {
-					std::cerr << "\nInvalid input. Please enter a valid number." << std::endl;
-					inputString.clear(); // Clear the input buffer
-				}
-			}
+		network.backPropagate({ static_cast<float>(static_cast<int>(network.getNodes()[0][0].activation) ^ static_cast<int>(network.getNodes()[0][1].activation)) });
+		++totalCalculated;
+		
+		if (totalCalculated % 20000 == 0)
+		{
+			window.update();
+			if (window.quit)
+				return 0;
+			window.present(&network);
+			std::cout << "Total calculated: " << totalCalculated << "\n";
+			std::cout << "Cost: " << network.calculateCost({ static_cast<float>(static_cast<int>(network.getNodes()[0][0].activation) ^ static_cast<int>(network.getNodes()[0][1].activation)) }) << std::endl;
 		}
 	}
 

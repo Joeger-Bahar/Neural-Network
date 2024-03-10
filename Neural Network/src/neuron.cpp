@@ -4,8 +4,10 @@ Neuron::Neuron(SDL_FPoint coords, float activation, float bias, int layer, int r
 
 void Neuron::render(SDL_Renderer* renderer, TTF_Font* font)
 {
+    float activationValue = activation > 1 ? 1 : activation;
+    activationValue = activationValue < 0 ? 0 : activationValue;
     // Set the transparency of the neuron based on the activation from 0 to 1
-    float alpha = static_cast<Uint8>(activation * 255);
+    float alpha = static_cast<Uint8>(activationValue * 255);
     SDL_SetRenderDrawColor(renderer, alpha, alpha, alpha, 255);
 
     // Midpoint circle algorithm
@@ -75,7 +77,10 @@ void Neuron::render(SDL_Renderer* renderer, TTF_Font* font)
     stream << std::fixed << std::setprecision(2) << activation;
     std::string activationString = stream.str();
 
-    SDL_Color textColor = (activation <= 0.5) ? SDL_Color({255, 255, 255, 255}) : SDL_Color({0, 0, 0, 255});
+    SDL_Color textColor = { 255, 255, 255, 255 };
+    if (activationValue > 0.5f)
+		textColor = { 0, 0, 0, 255 };
+
     SDL_Surface* surface = TTF_RenderText_Blended(font, activationString.c_str(), textColor);
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_Rect rect = {static_cast<int>(coords.x - radius / 1.5), static_cast<int>(coords.y - radius / 2), radius * 1.5, radius};

@@ -4,6 +4,7 @@
 #include <numeric>
 #include <vector>
 #include <random>
+#include <cmath>
 
 #include <SDL.h>
 
@@ -107,6 +108,12 @@ namespace Math
 
 	int Random(int lb, int hb);
 	float Random(float lb, float hb);
+
+	float LeakyReLU(float x);
+	float LeakyReLU_Derivative(float x);
+	
+	float sigmoid(float x);
+	float sigmoidDerivative(float x);
 
 	bool intersect(SDL_Rect& first_rect, SDL_Rect& second_rect);
 

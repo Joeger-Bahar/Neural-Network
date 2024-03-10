@@ -21,6 +21,25 @@ namespace Math
 		return dis(gen);
 	}
 
+	float LeakyReLU(float x)
+	{
+		// Same as std::min(std::max(x, 0.0f), 1.0f);
+		return x > 0 ? x : 0.01f * x;
+	}
+	float LeakyReLU_Derivative(float x)
+	{
+		return x > 0 ? 1.0f : 0.01f;
+	}
+
+	float sigmoid(float x)
+	{
+		return 1 / (1 + exp(-x));
+	}
+	float sigmoidDerivative(float x)
+	{
+		return x * (1 - x);
+	}
+
 	bool intersect(SDL_Rect& rect1, SDL_Rect& rect2)
 	{
 		return rect1.x <= rect2.x + rect2.w &&
