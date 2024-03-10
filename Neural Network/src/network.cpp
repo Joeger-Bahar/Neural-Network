@@ -4,6 +4,8 @@ Network::Network(int screenWidth, int screenHeight) : screenWidth(screenWidth), 
 
 Network& Network::withLayers(int inputCount, int hiddenLayerCount, int hiddenLayerSize, int outputCount)
 {
+	if (hiddenLayerSize == 0)
+		hiddenLayerCount = 0;
 	// Reserve the space for the neurons
 	neurons.reserve(hiddenLayerCount + 2);
 	for (int i = 0; i < hiddenLayerCount + 2; i++)
@@ -12,23 +14,33 @@ Network& Network::withLayers(int inputCount, int hiddenLayerCount, int hiddenLay
 	int radius = 35;
 
 	// Calculate the horizontal distance between the layers in the style of css flexbox space around
-	int totalLayerWidth = radius * (hiddenLayerCount + 2);
-	int horizontalDistance = (screenWidth - totalLayerWidth) / (hiddenLayerCount + 2 - 1);
+	//int totalLayerWidth = radius * (hiddenLayerCount + 2);
+	//int horizontalDistance = (screenWidth - totalLayerWidth) / (hiddenLayerCount + 2 - 1);
+	int neuronWidth = 2 * radius;  // Diameter of neurons
+	int totalNeuronWidth = (hiddenLayerCount + 2) * neuronWidth;
+	int padding = (screenWidth - totalNeuronWidth) / 4;
+
+	int horizontalDistance = (screenWidth - 2 * radius) / (hiddenLayerCount + 1);
+
+	// Calculate x positions for neurons in the input layer
+	int inputLayerX = padding + radius;
 
 	// Create the input layer
 	for (int i = 0; i < inputCount; i++)
 	{
 		int verticalDistance = screenHeight / (inputCount + 1);
-		neurons[0].push_back(Neuron({ static_cast<float>(radius * 2), static_cast<float>((i + 1) * verticalDistance) }, Math::Random(0.0f, 1.0f), 0.0f, 2, radius));
+		neurons[0].push_back(Neuron({ static_cast<float>(inputLayerX), static_cast<float>((i + 1) * verticalDistance) }, Math::Random(0.0f, 1.0f), 0.0f, 2, radius));
 	}
 
+	int currentX = inputLayerX + horizontalDistance;
 	// Create the hidden layers
 	for (int i = 0; i < hiddenLayerCount; i++)
 	{
 		for (int j = 0; j < hiddenLayerSize; j++)
 		{
 			int verticalDistance = screenHeight / (hiddenLayerSize + 1);
-			neurons[i + 1].push_back(Neuron({ static_cast<float>((i + 1) * horizontalDistance) + radius * 2, static_cast<float>((j + 1) * verticalDistance) }, Math::Random(0.0f, 1.0f), 0.0f, 2, radius));
+			neurons[i + 1].push_back(Neuron({ static_cast<float>(currentX) + radius * 2, static_cast<float>((j + 1) * verticalDistance) }, Math::Random(0.0f, 1.0f), 0.0f, 2, radius));
+			currentX += horizontalDistance;
 		}
 	}
 
@@ -36,13 +48,15 @@ Network& Network::withLayers(int inputCount, int hiddenLayerCount, int hiddenLay
 	for (int i = 0; i < outputCount; i++)
 	{
 		int verticalDistance = screenHeight / (outputCount + 1);
-		neurons[hiddenLayerCount + 1].emplace_back(Neuron({ static_cast<float>((hiddenLayerCount + 1) * horizontalDistance) + radius * 2, static_cast<float>((i + 1) * verticalDistance) }, Math::Random(0.0f, 1.0f), 0.0f, 2, radius));
+		neurons[hiddenLayerCount + 1].emplace_back(Neuron({ static_cast<float>(inputLayerX + totalNeuronWidth - radius) + radius * 2, static_cast<float>((i + 1) * verticalDistance) }, Math::Random(0.0f, 1.0f), 0.0f, 2, radius));
 	}
 
 	int totalNeurons = inputCount + hiddenLayerCount * hiddenLayerSize + outputCount;
-	weights.resize(totalNeurons);
-	for (int i = 0; i < totalNeurons; ++i)
-		weights[i].resize(totalNeurons);
+	weights.resize(neurons.size() - 1);
+	for (size_t i = 0; i < weights.size(); ++i)
+	{
+		weights[i].resize(neurons[i].size() * neurons[i + 1].size());
+	}
 
 	return *this;
 }
@@ -89,16 +103,14 @@ void Network::setActivation(float activation)
 
 void Network::connectNodes()
 {
-	for (int i = 0; i < neurons.size() - 1; i++)
+	for (size_t i = 0; i < neurons.size() - 1; ++i)
 	{
-		for (int j = 0; j < neurons[i].size(); ++j)
+		for (size_t j = 0; j < neurons[i].size(); ++j)
 		{
-			for (int k = 0; k < neurons[i + 1].size(); ++k)
+			for (size_t k = 0; k < neurons[i + 1].size(); ++k)
 			{
-				// Generate a random weight between -1 and 1
 				float randomWeight = std::round(Math::Random(-1.0f, 1.0f) * 100) / 100;
-				std::cout << "Random weight: " << randomWeight << std::endl;
-				weights[i][j * neurons[i + 1].size() + k] = randomWeight; // Problem here
+				weights[i][j * neurons[i + 1].size() + k] = randomWeight;
 			}
 		}
 	}
