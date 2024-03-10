@@ -18,7 +18,6 @@ Network& Network::withLayers(int inputCount, int hiddenLayerCount, int hiddenLay
 	int spaceAvailable = screenWidth - (neuronWidth * (hiddenLayerCount + 2));
 	spaceAvailable -= neuronWidth; // Subtract the radius of the first and last neuron
 	int horizontalDistance = spaceAvailable / (hiddenLayerCount + 2);
-	std::cout << horizontalDistance << std::endl;
 
 	// Create the input layer
 	for (int i = 0; i < inputCount; i++)
@@ -35,9 +34,8 @@ Network& Network::withLayers(int inputCount, int hiddenLayerCount, int hiddenLay
 		{
 			int verticalDistance = screenHeight / (hiddenLayerSize + 1);
 			neurons[i + 1].push_back(Neuron({ static_cast<float>(currentX + neuronWidth), static_cast<float>((j + 1) * verticalDistance) }, Math::Random(0.0f, 1.0f), 0.0f, 2, radius));
-			currentX += horizontalDistance + neuronWidth;
-			std::cout << currentX << std::endl;
 		}
+		currentX += horizontalDistance + neuronWidth;
 	}
 
 	// Create the output layer
