@@ -12,12 +12,7 @@ Network& Network::withLayers(int inputCount, int hiddenLayerCount, int hiddenLay
 		neurons.push_back(std::vector<Neuron>());
 
 	int radius = 35;
-
-	// Calculate the horizontal distance between the layers in the style of css flexbox space around
 	int neuronWidth = radius * 2;
-	int spaceAvailable = screenWidth - (neuronWidth * (hiddenLayerCount + 2));
-	spaceAvailable -= neuronWidth; // Subtract the radius of the first and last neuron
-	int horizontalDistance = spaceAvailable / (hiddenLayerCount + 2);
 
 	// Create the input layer
 	for (int i = 0; i < inputCount; i++)
@@ -27,24 +22,31 @@ Network& Network::withLayers(int inputCount, int hiddenLayerCount, int hiddenLay
 			Math::Random(0.0f, 1.0f), Math::Random(-0.1f, 0.1f), 0, radius));
 	}
 
-	int currentX = horizontalDistance + neuronWidth;
+	// Calculate the horizontal distance between the layers in the style of css flexbox space around
+	// Calculate the space available between the input and output layers
+	int spaceBetween = screenWidth - 4 * neuronWidth;
+
+	// Calculate the horizontal distance between the hidden layers
+	int horizontalDistance = spaceBetween / (hiddenLayerCount + 1);
+	int currentX = 2 * neuronWidth + horizontalDistance;
+
 	// Create the hidden layers
 	for (int i = 0; i < hiddenLayerCount; i++)
 	{
 		for (int j = 0; j < hiddenLayerSize; j++)
 		{
 			int verticalDistance = screenHeight / (hiddenLayerSize + 1);
-			neurons[i + 1].push_back(Neuron({ static_cast<float>(currentX + neuronWidth), static_cast<float>((j + 1) * verticalDistance) },
+			neurons[i + 1].push_back(Neuron({ static_cast<float>(currentX), static_cast<float>((j + 1) * verticalDistance) },
 				Math::Random(0.0f, 1.0f), Math::Random(-0.1f, 0.1f), i + 1, radius));
 		}
-		currentX += horizontalDistance + neuronWidth;
+		currentX += horizontalDistance;
 	}
 
 	// Create the output layer
 	for (int i = 0; i < outputCount; i++)
 	{
 		int verticalDistance = screenHeight / (outputCount + 1);
-		neurons[hiddenLayerCount + 1].emplace_back(Neuron({ static_cast<float>(currentX + neuronWidth), static_cast<float>((i + 1) * verticalDistance) },
+		neurons[hiddenLayerCount + 1].emplace_back(Neuron({ static_cast<float>(screenWidth - neuronWidth), static_cast<float>((i + 1) * verticalDistance) },
 			Math::Random(0.0f, 1.0f), Math::Random(-0.1f, 0.1f), hiddenLayerCount + 2, radius));
 	}
 
@@ -62,7 +64,7 @@ void drawThickLine(SDL_Renderer* renderer, int x1, int y1, int x2, int y2, int t
 
 void Network::render(SDL_Renderer* renderer)
 {
-	TTF_Font* font = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 24);
+	TTF_Font* font = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 35);
 
 	// Render the connections
 	for (int i = 0; i < neurons.size() - 1; i++)
@@ -117,25 +119,33 @@ void Network::connectNodes()
 	}
 }
 
+void Network::multiplyAdd(std::vector<std::vector<float>>& weights, std::vector<std::vector<Neuron>>& neurons, int from_layer, int to_layer)
+{
+	for (size_t j = 0; j < neurons[to_layer].size(); ++j)
+	{
+		float weighted_sum = 0.0f;
+		for (size_t k = 0; k < neurons[from_layer].size(); ++k)
+		{
+			weighted_sum += neurons[from_layer][k].activation * weights[from_layer][k * neurons[to_layer].size() + j];
+		}
+		// Add bias
+		weighted_sum += neurons[to_layer][j].bias;
+		// Apply Leaky ReLU activation function
+		neurons[to_layer][j].activation = Math::LeakyReLU(weighted_sum);
+	}
+}
+
 void Network::forwardPropagate()
 {
 	int x = rand() % 2;
 	int y = rand() % 2;
+
 	neurons[0][0].activation = x;
 	neurons[0][1].activation = y;
 
 	for (size_t i = 0; i < neurons.size() - 1; ++i)
 	{
-		for (size_t j = 0; j < neurons[i + 1].size(); ++j)
-		{
-			float weighted_sum = 0.0f;
-			for (size_t k = 0; k < neurons[i].size(); ++k)
-			{
-				weighted_sum += neurons[i][k].activation * weights[i][k * neurons[i + 1].size() + j];
-			}
-			// Apply ReLU activation function
-			neurons[i + 1][j].activation = Math::LeakyReLU(weighted_sum + neurons[i + 1][j].bias);
-		}
+		multiplyAdd(weights, neurons, i, i + 1);
 	}
 }
 

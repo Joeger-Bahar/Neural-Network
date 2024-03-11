@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <thread>
 
 #include "SDL.h"
 #include "SDL_ttf.h"
@@ -9,7 +10,7 @@
 #include "network.hpp"
 #include "time.hpp"
 
-constexpr int SCREEN_WIDTH = 800;
+constexpr int SCREEN_WIDTH = 1000;
 constexpr int SCREEN_HEIGHT = 800;
 
 int main(int argv, char* argc[])
@@ -20,9 +21,9 @@ int main(int argv, char* argc[])
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
 
-	WindowManager window("Neural Network", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_HEIGHT, SCREEN_WIDTH, SDL_WINDOW_RESIZABLE);
+	WindowManager window("Neural Network", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_RESIZABLE);
 
-	Network network = Network(SCREEN_WIDTH, SCREEN_HEIGHT).withLayers(2, 15, 15, 1); // Spacing between front and back ends uneven
+	Network network = Network(SCREEN_WIDTH, SCREEN_HEIGHT).withLayers(2, 4, 8, 1); // Spacing between front and back ends uneven
 	network.connectNodes();
 
 	bool runNetwork = 1;
@@ -38,7 +39,7 @@ int main(int argv, char* argc[])
 		network.backPropagate({ static_cast<float>(static_cast<int>(network.getNodes()[0][0].activation) ^ static_cast<int>(network.getNodes()[0][1].activation)) });
 		++totalCalculated;
 		
-		if (totalCalculated % 20000 == 0)
+		if (totalCalculated % 100000 == 0)
 		{
 			window.update();
 			if (window.quit)

@@ -26,10 +26,11 @@ public:
 	void backPropagate(std::vector<float> expected);
 
 	float calculateCost(std::vector<float> expected);
+	void multiplyAdd(std::vector<std::vector<float>>& weights, std::vector<std::vector<Neuron>>& neurons, int from_layer, int to_layer);
 
 private:
 	std::vector<std::vector<float>> weights;
 	std::vector<std::vector<Neuron>> neurons;
-	float learningRate = 0.2f;
+	double learningRate = 0.1;
 	int screenWidth, screenHeight;
 };
