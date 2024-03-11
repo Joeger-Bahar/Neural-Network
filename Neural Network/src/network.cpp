@@ -119,7 +119,7 @@ void Network::connectNodes()
 	}
 }
 
-void Network::multiplyAdd(std::vector<std::vector<float>>& weights, std::vector<std::vector<Neuron>>& neurons, int from_layer, int to_layer)
+void Network::setLayerActivation(std::vector<std::vector<float>>& weights, std::vector<std::vector<Neuron>>& neurons, int from_layer, int to_layer)
 {
 	for (size_t j = 0; j < neurons[to_layer].size(); ++j)
 	{
@@ -145,7 +145,7 @@ void Network::forwardPropagate()
 
 	for (size_t i = 0; i < neurons.size() - 1; ++i)
 	{
-		multiplyAdd(weights, neurons, i, i + 1);
+		setLayerActivation(weights, neurons, i, i + 1);
 	}
 }
 
