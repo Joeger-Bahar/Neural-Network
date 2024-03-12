@@ -67,7 +67,7 @@ void Network::render(SDL_Renderer* renderer)
 	TTF_Font* font = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 35);
 
 	// Render the connections
-	for (int i = 0; i < neurons.size() - 1; i++)
+	for (int i = 1; i < neurons.size() - 1; i++)
 	{
 		for (int j = 0; j < neurons[i].size(); ++j)
 		{
@@ -84,10 +84,12 @@ void Network::render(SDL_Renderer* renderer)
 		}
 	}
 	// Render the nodes
-	for (auto& row : neurons)
+	for (int i = 1; i < neurons.size(); ++i)
 	{
-		for (Neuron& node : row)
-			node.render(renderer, font);
+		for (int j = 0; j < neurons[i].size(); ++j)
+		{
+			neurons[i][j].render(renderer, font);
+		}
 	}
 }
 
@@ -131,21 +133,20 @@ void Network::setLayerActivation(std::vector<std::vector<float>>& weights, std::
 		// Add bias
 		weighted_sum += neurons[to_layer][j].bias;
 		// Apply Leaky ReLU activation function
-		neurons[to_layer][j].activation = Math::LeakyReLU(weighted_sum);
+		neurons[to_layer][j].activation = Math::sigmoid(weighted_sum);
 	}
 }
 
 void Network::forwardPropagate()
 {
-	int x = rand() % 2;
-	int y = rand() % 2;
-
-	neurons[0][0].activation = x;
-	neurons[0][1].activation = y;
-
 	for (size_t i = 0; i < neurons.size() - 1; ++i)
 	{
 		setLayerActivation(weights, neurons, i, i + 1);
+	}
+	// Clamp output to 0 and 1
+	for (size_t i = 0; i < neurons.back().size(); ++i)
+	{
+		neurons.back()[i].activation = std::max(neurons.back()[i].activation, 0.0f);
 	}
 }
 
@@ -155,7 +156,7 @@ void Network::backPropagate(std::vector<float> expected)
 	for (int i = 0; i < neurons.back().size(); ++i)
 	{
 		float error = neurons.back()[i].activation - expected[i];
-		float gradient = error * Math::LeakyReLU_Derivative(neurons.back()[i].activation); // Use ReLU_Derivative here
+		float gradient = error * Math::sigmoidDerivative(neurons.back()[i].activation); // Use ReLU_Derivative here
 		neurons.back()[i].gradient = gradient;
 	}
 
@@ -169,7 +170,7 @@ void Network::backPropagate(std::vector<float> expected)
 			{
 				sum += neurons[i + 1][k].gradient * weights[i][j * neurons[i + 1].size() + k];
 			}
-			float gradient = sum * Math::LeakyReLU_Derivative(neurons[i][j].activation); // Use ReLU_Derivative here
+			float gradient = sum * Math::sigmoidDerivative(neurons[i][j].activation); // Use ReLU_Derivative here
 			neurons[i][j].gradient = gradient;
 		}
 	}
@@ -192,6 +193,93 @@ float Network::calculateCost(std::vector<float> expected)
 		cost += (neurons.back()[i].activation - expected[i]) * (neurons.back()[i].activation - expected[i]);
 	}
 	return cost / neurons.back().size();
+}
+
+void Network::setInputs(const std::vector<float>& inputValues)
+{
+	// Check if the size of inputValues matches the input layer size
+	if (inputValues.size() != neurons[0].size())
+	{
+		throw std::invalid_argument("Input size doesn't match the input layer size");
+	}
+
+	// Set input values to the neurons in the input layer
+	for (size_t i = 0; i < inputValues.size(); ++i)
+	{
+		neurons[0][i].setValue(inputValues[i]);
+	}
+}
+
+std::vector<float> Network::getOutputs()
+{
+	// Get the output values from the neurons in the output layer
+	std::vector<float> outputValues(neurons.back().size());
+	for (size_t i = 0; i < neurons.back().size(); ++i)
+	{
+		outputValues[i] = neurons.back()[i].getValue();
+	}
+	return outputValues;
+}
+
+void Network::save()
+{
+	std::ofstream file("network.txt");
+	if (file.is_open())
+	{
+		file << neurons.size() << "\n";
+		for (size_t i = 0; i < neurons.size(); ++i)
+		{
+			file << neurons[i].size() << "\n";
+			for (size_t j = 0; j < neurons[i].size(); ++j)
+			{
+				file << neurons[i][j].bias << " " << neurons[i][j].activation << " " << neurons[i][j].coords.x << " " << neurons[i][j].coords.y << " " << neurons[i][j].radius << "\n";
+			}
+		}
+		file << weights.size() << "\n";
+		for (size_t i = 0; i < weights.size(); ++i)
+		{
+			file << weights[i].size() << "\n";
+			for (size_t j = 0; j < weights[i].size(); ++j)
+			{
+				file << weights[i][j] << " ";
+			}
+		}
+		file.close();
+	}
+}
+
+void Network::load()
+{
+	std::ifstream file("network.txt");
+	if (file.is_open())
+	{
+		int size;
+		file >> size;
+		neurons.resize(size);
+		for (size_t i = 0; i < neurons.size(); ++i)
+		{
+			int size;
+			file >> size;
+			neurons[i].resize(size);
+			for (size_t j = 0; j < neurons[i].size(); ++j)
+			{
+				file >> neurons[i][j].bias >> neurons[i][j].activation >> neurons[i][j].coords.x >> neurons[i][j].coords.y >> neurons[i][j].radius;
+			}
+		}
+		file >> size;
+		weights.resize(size);
+		for (size_t i = 0; i < weights.size(); ++i)
+		{
+			int size;
+			file >> size;
+			weights[i].resize(size);
+			for (size_t j = 0; j < weights[i].size(); ++j)
+			{
+				file >> weights[i][j];
+			}
+		}
+		file.close();
+	}
 }
 
 void drawThickLine(SDL_Renderer* renderer, int x1, int y1, int x2, int y2, int thickness)

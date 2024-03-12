@@ -141,10 +141,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\button.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\math.cpp" />
+    <ClCompile Include="src\mouse.cpp" />
     <ClCompile Include="src\network.cpp" />
     <ClCompile Include="src\neuron.cpp" />
+    <ClCompile Include="src\text.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SDL2.dll" />
@@ -152,9 +155,12 @@
     <None Include="SDL2_ttf.dll" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\button.hpp" />
     <ClInclude Include="src\math.hpp" />
+    <ClInclude Include="src\mouse.hpp" />
     <ClInclude Include="src\network.hpp" />
     <ClInclude Include="src\neuron.hpp" />
+    <ClInclude Include="src\text.hpp" />
     <ClInclude Include="src\time.hpp" />
     <ClInclude Include="src\window_manager.hpp" />
   </ItemGroup>

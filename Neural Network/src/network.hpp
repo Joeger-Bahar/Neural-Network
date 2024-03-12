@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fstream>
 #include <vector>
 
 #include "neuron.hpp"
@@ -27,6 +28,12 @@ public:
 
 	float calculateCost(std::vector<float> expected);
 	void setLayerActivation(std::vector<std::vector<float>>& weights, std::vector<std::vector<Neuron>>& neurons, int from_layer, int to_layer);
+
+	void save();
+	void load();
+
+	void setInputs(const std::vector<float>& inputValues);
+	std::vector<float> getOutputs();
 
 private:
 	std::vector<std::vector<float>> weights;

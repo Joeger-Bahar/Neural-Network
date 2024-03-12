@@ -9,7 +9,12 @@ namespace Math
 
 	int Random(int lb, int hb)
 	{
-		return lb + rand() % (hb - lb + 1);
+		std::random_device rd; // Obtain a random number from hardware
+		std::mt19937 gen(rd()); // Seed the generator
+		std::uniform_real_distribution<float> dis(static_cast<float>(lb), static_cast<float>(hb)); // Define the range
+
+		// Generate and return a random float
+		return static_cast<int>(dis(gen));
 	}
 	float Random(float lb, float hb)
 	{
@@ -38,6 +43,15 @@ namespace Math
 	float sigmoidDerivative(float x)
 	{
 		return x * (1 - x);
+	}
+
+	float tanh(float x)
+	{
+		return std::tanh(x);
+	}
+	float tanhDerivative(float x)
+	{
+		return 1 - x * x;
 	}
 
 	bool intersect(SDL_Rect& rect1, SDL_Rect& rect2)

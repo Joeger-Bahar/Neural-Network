@@ -115,6 +115,9 @@ namespace Math
 	float sigmoid(float x);
 	float sigmoidDerivative(float x);
 
+	float tanh(float x);
+	float tanhDerivative(float x);
+
 	bool intersect(SDL_Rect& first_rect, SDL_Rect& second_rect);
 
 	void lag();
