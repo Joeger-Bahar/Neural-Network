@@ -60,7 +60,7 @@ public:
 		checkEvents(imagesSize);
 	}
 
-	void present(Network* network, SDL_Texture* number, float confidence, int predictedNumber, bool reDraw)
+	void present(Network* network, SDL_Texture* number, float confidence, int predictedNumber, bool correct, bool reDraw)
 	{
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
@@ -78,6 +78,11 @@ public:
 			// Make a string with "Confidence: " and the confidence * 100 followed by a percent sign
 			std::string confidenceString = "Confidence: " + std::to_string(confidence * 100) + "%";
 			std::string predictedNumberString = "Predicted Number: " + std::to_string(predictedNumber);
+			std::string correctString;
+			if (correct)
+				correctString = "Correct";
+			else
+				correctString = "Incorrect";
 
 			// Draw the confidence and cost below the number
 			SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
@@ -85,23 +90,36 @@ public:
 			SDL_RenderClear(renderer);
 
 			SDL_Color color = { 255, 255, 255, 255 };
+
 			TTF_Font* font = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 35);
-			SDL_Surface* confidenceSurface = TTF_RenderText_Solid(font, confidenceString.c_str(), color);
+
+			SDL_Surface* confidenceSurface = TTF_RenderText_Blended(font, confidenceString.c_str(), color);
 			SDL_Texture* confidenceTexture = SDL_CreateTextureFromSurface(renderer, confidenceSurface);
-			SDL_Rect confidenceRect = { 0, 0, 366, 66 };
+
+			SDL_Rect confidenceRect = { 0, 0, confidenceSurface->w, confidenceSurface->h };
 			SDL_RenderCopy(renderer, confidenceTexture, nullptr, &confidenceRect);
+
+			SDL_Surface* predictedNumberSurface = TTF_RenderText_Blended(font, predictedNumberString.c_str(), color);
+			SDL_Texture* predictedNumberTexture = SDL_CreateTextureFromSurface(renderer, predictedNumberSurface);
+
+			SDL_Rect predictedNumberRect = { 0, confidenceSurface->h, predictedNumberSurface->w, predictedNumberSurface->h };
+			SDL_RenderCopy(renderer, predictedNumberTexture, nullptr, &predictedNumberRect);
+
+			SDL_Surface* correctSurface = TTF_RenderText_Blended(font, correctString.c_str(), color);
+			SDL_Texture* correctTexture = SDL_CreateTextureFromSurface(renderer, correctSurface);
+
+			SDL_Rect correctRect = { 0, predictedNumberRect.h + confidenceRect.h, correctSurface->w, correctSurface->h };
+			SDL_RenderCopy(renderer, correctTexture, nullptr, &correctRect);
+
 			SDL_FreeSurface(confidenceSurface);
 			SDL_DestroyTexture(confidenceTexture);
-
-			SDL_Surface* predictedNumberSurface = TTF_RenderText_Solid(font, predictedNumberString.c_str(), color);
-			SDL_Texture* predictedNumberTexture = SDL_CreateTextureFromSurface(renderer, predictedNumberSurface);
-			SDL_Rect predictedNumberRect = { 0, 100, 366, 66 };
-			SDL_RenderCopy(renderer, predictedNumberTexture, nullptr, &predictedNumberRect);
 			SDL_FreeSurface(predictedNumberSurface);
 			SDL_DestroyTexture(predictedNumberTexture);
+			SDL_FreeSurface(correctSurface);
+			SDL_DestroyTexture(correctTexture);
 		}
 
-		SDL_Rect dst = { screenWidth - (28 * 10), screenHeight / 2 - (28 * 5), 28 * 10, 28 * 10};
+		SDL_Rect dst = { screenWidth - 635, screenHeight / 2 - 56, 28 * 15, 28 * 15};
 		SDL_RenderCopy(renderer, number, nullptr, &dst);
 
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);

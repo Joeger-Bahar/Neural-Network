@@ -12,11 +12,15 @@
 #include "button.hpp"
 #include "time.hpp"
 
+/*
+ADD CORRECT NUMBER TO THE SCREEN
+MAKE NEURONS SMALLER DEPENDING ON THE AMOUNT OF NEURONS
+*/
+
 constexpr int IMAGE_WIDTH = 28;
 constexpr int IMAGE_HEIGHT = 28;
-constexpr int NUM_IMAGES = 60000;
 
-std::vector<std::vector<float>>* readMNISTImages(const std::string& filename)
+std::vector<std::vector<float>>* readMNISTImages(const std::string& filename, int numberOfImages)
 {
     std::ifstream file(filename, std::ios::binary);
 
@@ -48,9 +52,9 @@ std::vector<std::vector<float>>* readMNISTImages(const std::string& filename)
     n_cols = SDL_SwapBE32(n_cols);
 
     std::vector<std::vector<float>>* images = new std::vector<std::vector<float>>();
-    images->reserve(NUM_IMAGES);
+    images->reserve(numberOfImages);
 
-    for (int i = 0; i < number_of_images && i < NUM_IMAGES; ++i)
+    for (int i = 0; i < number_of_images && i < numberOfImages; ++i)
     {
         std::vector<float> image;
         image.reserve(IMAGE_WIDTH * IMAGE_HEIGHT);
@@ -72,7 +76,7 @@ std::vector<std::vector<float>>* readMNISTImages(const std::string& filename)
     return images;
 }
 
-std::vector<std::string>* readMNISTLabels(const std::string& filename)
+std::vector<std::string>* readMNISTLabels(const std::string& filename, int numberOfLabels)
 {
     std::ifstream file(filename, std::ios::binary);
 
@@ -98,9 +102,9 @@ std::vector<std::string>* readMNISTLabels(const std::string& filename)
     number_of_labels = SDL_SwapBE32(number_of_labels);
 
     std::vector<std::string>* labels = new std::vector<std::string>();
-    labels->reserve(NUM_IMAGES);
+    labels->reserve(numberOfLabels);
 
-    for (int i = 0; i < number_of_labels && i < NUM_IMAGES; ++i) 
+    for (int i = 0; i < number_of_labels && i < numberOfLabels; ++i)
     {
         unsigned char label = 0;
         file.read((char*)&label, sizeof(label));
@@ -162,11 +166,11 @@ int main(int argv, char* argc[])
 	
 	int totalCalculated = 0;
 
-    std::vector<std::vector<float>>* mnistTrainImages = readMNISTImages("mnist_images.idx3-ubyte");
-    std::vector<std::string>* mnistTrainLabels = readMNISTLabels("mnist_labels.idx1-ubyte");
+    std::vector<std::vector<float>>* mnistTrainImages = readMNISTImages("mnist_images.idx3-ubyte", 60000);
+    std::vector<std::string>* mnistTrainLabels = readMNISTLabels("mnist_labels.idx1-ubyte", 60000);
 
-    std::vector<std::vector<float>>* mnistTestImages = readMNISTImages("test_images.idx3-ubyte");
-    std::vector<std::string>* mnistTestLabels = readMNISTLabels("test_labels.idx1-ubyte");
+    std::vector<std::vector<float>>* mnistTestImages = readMNISTImages("test_images.idx3-ubyte", 10000);
+    std::vector<std::string>* mnistTestLabels = readMNISTLabels("test_labels.idx1-ubyte", 10000);
 
     SDL_assert(mnistTrainImages->size() == mnistTrainLabels->size());
     if (mnistTrainImages->empty())
@@ -174,7 +178,7 @@ int main(int argv, char* argc[])
         std::cerr << "Failed to read MNIST images!" << std::endl;
         //return 1;
     }
-    window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTrainImages)[window.imageIndex]), 0, 0, 1);
+    window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTrainImages)[window.imageIndex]), 0, 0, 0, 1);
 	srand(time(NULL));
 	std::string inputString = "";
 
@@ -184,6 +188,7 @@ int main(int argv, char* argc[])
     float confidence = 1.0f;
     int predictedNumber = 7;
     bool reDraw = 0;
+    bool correct = 0;
 
 	while (1)
 	{
@@ -223,28 +228,30 @@ int main(int argv, char* argc[])
 				}
 			}
 
-			window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTestImages)[window.imageIndex]), confidence, predictedNumber, 1);
+            correct = std::stoi((*mnistTestLabels)[window.imageIndex]) == predictedNumber;
+
+			window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTestImages)[window.imageIndex]), confidence, predictedNumber, correct, 1);
 			std::cout << "Total calculated: " << totalCalculated << "\n";
         }
         SDL_SetRenderTarget(window.getRenderer(), NULL);
-        if (button.buttonPressed("Save", { SCREEN_WIDTH - 550, SCREEN_HEIGHT - 300, 250, 66 }))
+        if (button.buttonPressed("Save", { SCREEN_WIDTH - 310, 10, 250, 66 }))
         {
             network.save();
             std::cout << "Done saving" << std::endl;
         }
         SDL_SetRenderTarget(window.getRenderer(), NULL);
-        if (button.buttonPressed("Load", { SCREEN_WIDTH - 550, SCREEN_HEIGHT - 200, 250, 66 }))
+        if (button.buttonPressed("Load", { SCREEN_WIDTH - 310, 110, 250, 66 }))
         {
             network.load();
             std::cout << "Done loading" << std::endl;
-            window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTestImages)[window.imageIndex]), confidence, predictedNumber, 1);
+            window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTestImages)[window.imageIndex]), confidence, predictedNumber, correct, 1);
         }
         SDL_SetRenderTarget(window.getRenderer(), NULL);
-        if (button.buttonPressed("Train", { SCREEN_WIDTH - 550, SCREEN_HEIGHT - 100, 250, 66 }))
+        if (button.buttonPressed("Train", { SCREEN_WIDTH - 310, 210, 250, 66 }))
         {
             for (int j = 0; j < 10; ++j)
             {
-                window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTrainImages)[Math::Random(0, 59999)]), 0, 0, 1);
+                window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTrainImages)[Math::Random(0, 59999)]), 0, 0, correct, 1);
                 std::cout << "Training: " << j << '\n';
                 window.imageIndex = Math::Random(0, 68999);
                 for (int x = 0; x < 69000; ++x)
@@ -276,7 +283,7 @@ int main(int argv, char* argc[])
         }
         SDL_SetRenderTarget(window.getRenderer(), NULL);
 
-        window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTestImages)[window.imageIndex]), confidence, predictedNumber, 0);
+        window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTestImages)[window.imageIndex]), confidence, predictedNumber, correct, 0);
 	}
     delete mnistTrainImages;
     delete mnistTrainLabels;
