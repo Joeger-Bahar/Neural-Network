@@ -40,11 +40,9 @@ public:
 				switch (event.key.keysym.sym)
 				{
 				case SDLK_RIGHT:
-					imageIndex = Math::Random(0, 10000);
 					increment = 1;
 					break;
 				case SDLK_LEFT:
-					imageIndex = Math::Random(0, 10000);
 					increment = 1;
 					break;
 				}
@@ -55,18 +53,18 @@ public:
 
 	void update(int imagesSize)
 	{
-		SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+		SDL_SetRenderDrawColor(renderer, 10, 10, 10, 255);
 		SDL_RenderClear(renderer);
 		checkEvents(imagesSize);
 	}
 
-	void present(Network* network, SDL_Texture* number, float confidence, int predictedNumber, bool correct, bool reDraw)
+	void present(Network* network, SDL_Texture* number, float confidence, int predictedNumber, int correctNumber, bool correct, bool reDraw)
 	{
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
 		if (reDraw)
 		{
-			SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+			SDL_SetRenderDrawColor(renderer, 10, 10, 10, 255);
 			SDL_SetRenderTarget(renderer, networkTexture);
 			SDL_RenderClear(renderer);
 			network->render(renderer);
@@ -79,13 +77,15 @@ public:
 			std::string confidenceString = "Confidence: " + std::to_string(confidence * 100) + "%";
 			std::string predictedNumberString = "Predicted Number: " + std::to_string(predictedNumber);
 			std::string correctString;
+			std::string correctNumberString = "Correct Number: " + std::to_string(correctNumber);
+
 			if (correct)
 				correctString = "Correct";
 			else
 				correctString = "Incorrect";
 
 			// Draw the confidence and cost below the number
-			SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
+			SDL_SetRenderDrawColor(renderer, 10, 10, 10, 255);
 			SDL_SetRenderTarget(renderer, informationTexture);
 			SDL_RenderClear(renderer);
 
@@ -105,11 +105,18 @@ public:
 			SDL_Rect predictedNumberRect = { 0, confidenceSurface->h, predictedNumberSurface->w, predictedNumberSurface->h };
 			SDL_RenderCopy(renderer, predictedNumberTexture, nullptr, &predictedNumberRect);
 
+			SDL_Surface* correctNumberSurface = TTF_RenderText_Blended(font, correctNumberString.c_str(), color);
+			SDL_Texture* correctNumberTexture = SDL_CreateTextureFromSurface(renderer, correctNumberSurface);
+
+			SDL_Rect correctNumberRect = { 0, predictedNumberRect.h + confidenceRect.h, correctNumberSurface->w, correctNumberSurface->h };
+			SDL_RenderCopy(renderer, correctNumberTexture, nullptr, &correctNumberRect);
+
 			SDL_Surface* correctSurface = TTF_RenderText_Blended(font, correctString.c_str(), color);
 			SDL_Texture* correctTexture = SDL_CreateTextureFromSurface(renderer, correctSurface);
 
-			SDL_Rect correctRect = { 0, predictedNumberRect.h + confidenceRect.h, correctSurface->w, correctSurface->h };
+			SDL_Rect correctRect = { 0, predictedNumberRect.h + confidenceRect.h + correctNumberRect.h, correctSurface->w, correctSurface->h };
 			SDL_RenderCopy(renderer, correctTexture, nullptr, &correctRect);
+
 
 			SDL_FreeSurface(confidenceSurface);
 			SDL_DestroyTexture(confidenceTexture);
@@ -117,9 +124,11 @@ public:
 			SDL_DestroyTexture(predictedNumberTexture);
 			SDL_FreeSurface(correctSurface);
 			SDL_DestroyTexture(correctTexture);
+			SDL_FreeSurface(correctNumberSurface);
+			SDL_DestroyTexture(correctNumberTexture);
 		}
 
-		SDL_Rect dst = { screenWidth - 635, screenHeight / 2 - 56, 28 * 15, 28 * 15};
+		SDL_Rect dst = { screenWidth - 635, screenHeight / 2 - 56, 28 * 16, 28 * 16};
 		SDL_RenderCopy(renderer, number, nullptr, &dst);
 
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);

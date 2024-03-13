@@ -118,6 +118,8 @@ namespace Math
 	float tanh(float x);
 	float tanhDerivative(float x);
 
+	std::vector<float> softmax(std::vector<float>& x);
+
 	bool intersect(SDL_Rect& first_rect, SDL_Rect& second_rect);
 
 	void lag();

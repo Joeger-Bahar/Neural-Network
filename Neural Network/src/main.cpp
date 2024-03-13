@@ -178,7 +178,7 @@ int main(int argv, char* argc[])
         std::cerr << "Failed to read MNIST images!" << std::endl;
         //return 1;
     }
-    window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTrainImages)[window.imageIndex]), 0, 0, 0, 1);
+    window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTrainImages)[window.imageIndex]), 0, 0, 0, 0, 1);
 	srand(time(NULL));
 	std::string inputString = "";
 
@@ -198,9 +198,10 @@ int main(int argv, char* argc[])
 			return 0;
         mouse.update();
         SDL_SetRenderTarget(window.getRenderer(), NULL);
-        if (window.increment) // button.buttonPressed("Next", {SCREEN_WIDTH + 100, SCREEN_HEIGHT - 400})
+        if (window.increment || button.buttonPressed("Next", { SCREEN_WIDTH - 350, 280, 250, 66 })) // SCREEN_WIDTH - 310 for center
         {
             window.increment = 0;
+            window.imageIndex = Math::Random(0, 10000);
 	        network.setInputs((*mnistTestImages)[window.imageIndex]);
 	        network.forwardPropagate();
 
@@ -215,7 +216,6 @@ int main(int argv, char* argc[])
 	        network.backPropagate(expected);
 	        ++totalCalculated;
 
-			confidence = 1 - network.calculateCost(expected);
             predictedNumber = 0;
             float prevHighest = 0;
             std::vector<float> output = network.getOutputs();
@@ -225,33 +225,36 @@ int main(int argv, char* argc[])
                 {
 					prevHighest = output[i];
 					predictedNumber = i;
+                    confidence = output[i];
 				}
 			}
 
             correct = std::stoi((*mnistTestLabels)[window.imageIndex]) == predictedNumber;
 
-			window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTestImages)[window.imageIndex]), confidence, predictedNumber, correct, 1);
-			std::cout << "Total calculated: " << totalCalculated << "\n";
+			window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTestImages)[window.imageIndex]), confidence, predictedNumber,
+                std::stoi((*mnistTestLabels)[window.imageIndex]), correct, 1);
         }
         SDL_SetRenderTarget(window.getRenderer(), NULL);
-        if (button.buttonPressed("Save", { SCREEN_WIDTH - 310, 10, 250, 66 }))
+        if (button.buttonPressed("Save", { SCREEN_WIDTH - 350, 10, 250, 66 }))
         {
             network.save();
             std::cout << "Done saving" << std::endl;
         }
         SDL_SetRenderTarget(window.getRenderer(), NULL);
-        if (button.buttonPressed("Load", { SCREEN_WIDTH - 310, 110, 250, 66 }))
+        if (button.buttonPressed("Load", { SCREEN_WIDTH - 350, 100, 250, 66 }))
         {
             network.load();
             std::cout << "Done loading" << std::endl;
-            window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTestImages)[window.imageIndex]), confidence, predictedNumber, correct, 1);
+            window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTestImages)[window.imageIndex]), confidence, predictedNumber,
+                std::stoi((*mnistTestLabels)[window.imageIndex]), correct, 1);
         }
         SDL_SetRenderTarget(window.getRenderer(), NULL);
-        if (button.buttonPressed("Train", { SCREEN_WIDTH - 310, 210, 250, 66 }))
+        if (button.buttonPressed("Train", { SCREEN_WIDTH - 350, 190, 250, 66 }))
         {
             for (int j = 0; j < 10; ++j)
             {
-                window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTrainImages)[Math::Random(0, 59999)]), 0, 0, correct, 1);
+                window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTrainImages)[Math::Random(0, 59999)]), 0, 0, 
+                    0, correct, 1);
                 std::cout << "Training: " << j << '\n';
                 window.imageIndex = Math::Random(0, 68999);
                 for (int x = 0; x < 69000; ++x)
@@ -283,7 +286,8 @@ int main(int argv, char* argc[])
         }
         SDL_SetRenderTarget(window.getRenderer(), NULL);
 
-        window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTestImages)[window.imageIndex]), confidence, predictedNumber, correct, 0);
+        window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTestImages)[window.imageIndex]), confidence, predictedNumber,
+            std::stoi((*mnistTestLabels)[window.imageIndex]), correct, 0);
 	}
     delete mnistTrainImages;
     delete mnistTrainLabels;

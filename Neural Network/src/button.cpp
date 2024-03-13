@@ -4,7 +4,7 @@
 #define BUTTON_Y_PADDING 1.8f // 18%
 
 ButtonManager::ButtonManager(SDL_Renderer* renderer, Text& text, SDL_Texture* renderTex, Mouse& mouse)
-	: m_Text(text), m_Renderer(renderer), m_RenderTex(renderTex), backgroundColor({ 192, 192, 192, 255 }),
+	: m_Text(text), m_Renderer(renderer), m_RenderTex(renderTex), backgroundColor({ 10, 10, 10, 255 }),
 	m_Mouse(mouse), currentButtonIndex(0) {}
 
 // Clears the buttons on the screen and resets the button index
@@ -59,6 +59,33 @@ bool ButtonManager::buttonPressed(const char* text, SDL_Rect rect)
 	return (m_Buttons.at(text).hovered && m_Mouse.getNewClick());
 }
 
+void drawRoundedRect(SDL_Renderer* renderer, SDL_Rect rect, int radius, bool fill)
+{
+	// Draw four circles at the corners
+	for (int w = 0; w < radius; w++)
+	{
+		for (int h = 0; h < radius; h++)
+		{
+			if ((radius - w) * (radius - w) + (radius - h) * (radius - h) <= radius * radius)
+			{
+				SDL_RenderDrawPoint(renderer, rect.x + radius - w, rect.y + radius - h);
+				SDL_RenderDrawPoint(renderer, rect.x + rect.w - radius + w, rect.y + radius - h);
+				SDL_RenderDrawPoint(renderer, rect.x + radius - w, rect.y + rect.h - radius + h);
+				SDL_RenderDrawPoint(renderer, rect.x + rect.w - radius + w, rect.y + rect.h - radius + h);
+			}
+		}
+	}
+
+	if (fill)
+	{
+		// Fill the rest of the rectangle
+		SDL_Rect rect1 = { rect.x + radius, rect.y, rect.w - 2 * radius, rect.h };
+		SDL_Rect rect2 = { rect.x, rect.y + radius, rect.w, rect.h - 2 * radius };
+		SDL_RenderFillRect(renderer, &rect1);
+		SDL_RenderFillRect(renderer, &rect2);
+	}
+}
+
 
 Button::Button(const int index, SDL_Rect dimensions, SDL_Texture* texture, SDL_Rect textDimensions) : hovered(0), index(index), m_Dimensions(dimensions),
 	m_TextTexture(texture), textDimensions(textDimensions) {}
@@ -68,13 +95,12 @@ void Button::renderButton(SDL_Renderer* renderer, Mouse& mouse, Text& text)
 	this->hovered = SDL_HasIntersection(&(m_Dimensions), &(mouse.rect));
 
 	// Draws and fills the button rect
-	SDL_RenderDrawRect(renderer, &(m_Dimensions));
-	SDL_RenderFillRect(renderer, &(m_Dimensions));
+	drawRoundedRect(renderer, m_Dimensions, 10, 1);
 
 	if (this->hovered)
 	{
 		SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
-		SDL_RenderDrawRect(renderer, &(m_Dimensions));
+		drawRoundedRect(renderer, m_Dimensions, 10, 0);
 	}
 
 	// Width and height are divided by the padding to get the text's dimensions relative to the whole button

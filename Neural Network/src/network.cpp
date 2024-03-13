@@ -38,7 +38,7 @@ Network& Network::withLayers(int inputCount, int hiddenLayerCount, int hiddenLay
 			//std::cout << "CurrentX: " << currentX << "\n";
 			int verticalDistance = screenHeight / (hiddenLayerSize + 1);
 			neurons[i + 1].push_back(Neuron({ static_cast<float>(currentX), static_cast<float>((j + 1) * verticalDistance) },
-				Math::Random(0.0f, 1.0f), Math::Random(-0.1f, 0.1f), i + 1, radius));
+				Math::Random(0.0f, 1.0f), Math::Random(-0.1f, 0.1f), i + 1, radius / 2.5f));
 		}
 		currentX += horizontalDistance;
 	}
@@ -192,7 +192,8 @@ float Network::calculateCost(std::vector<float> expected)
 	float cost = 0.0f;
 	for (size_t i = 0; i < neurons.back().size(); ++i)
 	{
-		cost += (neurons.back()[i].activation - expected[i]) * (neurons.back()[i].activation - expected[i]);
+		float output = neurons.back()[i].activation;
+		cost -= expected[i] * log(output) + (1 - expected[i]) * log(1 - output);
 	}
 	return cost / neurons.back().size();
 }

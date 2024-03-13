@@ -54,6 +54,26 @@ namespace Math
 		return 1 - x * x;
 	}
 
+	std::vector<float> softmax(std::vector<float>& x)
+	{
+		std::vector<float> result(x.size());
+		float max = *std::max_element(x.begin(), x.end());
+		float sum = 0.0f;
+
+		for (int i = 0; i < x.size(); ++i)
+		{
+			result[i] = std::exp(x[i] - max);
+			sum += result[i];
+		}
+
+		for (int i = 0; i < x.size(); ++i)
+		{
+			result[i] /= sum;
+		}
+
+		return result;
+	}
+
 	bool intersect(SDL_Rect& rect1, SDL_Rect& rect2)
 	{
 		return rect1.x <= rect2.x + rect2.w &&
