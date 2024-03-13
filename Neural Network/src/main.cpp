@@ -192,7 +192,7 @@ int main(int argv, char* argc[])
 		if (window.quit)
 			return 0;
         mouse.update();
-
+        SDL_SetRenderTarget(window.getRenderer(), NULL);
         if (window.increment) // button.buttonPressed("Next", {SCREEN_WIDTH + 100, SCREEN_HEIGHT - 400})
         {
             window.increment = 0;
@@ -226,16 +226,20 @@ int main(int argv, char* argc[])
 			window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTestImages)[window.imageIndex]), confidence, predictedNumber, 1);
 			std::cout << "Total calculated: " << totalCalculated << "\n";
         }
+        SDL_SetRenderTarget(window.getRenderer(), NULL);
         if (button.buttonPressed("Save", { SCREEN_WIDTH - 550, SCREEN_HEIGHT - 300, 250, 66 }))
         {
             network.save();
             std::cout << "Done saving" << std::endl;
         }
+        SDL_SetRenderTarget(window.getRenderer(), NULL);
         if (button.buttonPressed("Load", { SCREEN_WIDTH - 550, SCREEN_HEIGHT - 200, 250, 66 }))
         {
             network.load();
             std::cout << "Done loading" << std::endl;
+            window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTestImages)[window.imageIndex]), confidence, predictedNumber, 1);
         }
+        SDL_SetRenderTarget(window.getRenderer(), NULL);
         if (button.buttonPressed("Train", { SCREEN_WIDTH - 550, SCREEN_HEIGHT - 100, 250, 66 }))
         {
             for (int j = 0; j < 10; ++j)
@@ -270,12 +274,9 @@ int main(int argv, char* argc[])
             window.imageIndex = 0;
             std::cout << "Done training" << std::endl;
         }
-		
-		//if (totalCalculated % 10 == 0)
-		//{
-		//}
-        if (frames % 60 == 0)
-            window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTestImages)[window.imageIndex]), confidence, predictedNumber, 0);
+        SDL_SetRenderTarget(window.getRenderer(), NULL);
+
+        window.present(&network, createTextureFromMNISTImage(window.getRenderer(), (*mnistTestImages)[window.imageIndex]), confidence, predictedNumber, 0);
 	}
     delete mnistTrainImages;
     delete mnistTrainLabels;

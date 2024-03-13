@@ -86,5 +86,5 @@ void Neuron::render(SDL_Renderer* renderer, TTF_Font* font)
     SDL_Rect rect = {static_cast<int>(coords.x - radius / 1.5), static_cast<int>(coords.y - radius / 2), radius * 1.5, radius};
     SDL_RenderCopy(renderer, texture, NULL, &rect);
     SDL_FreeSurface(surface);
-    //SDL_DestroyTexture(texture);
+    SDL_DestroyTexture(texture);
 }

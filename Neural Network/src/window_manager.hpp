@@ -15,7 +15,7 @@ public:
 		window = SDL_CreateWindow(title, x, y, w, h, flags);
 		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
-		networkTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, screenWidth - 600, screenHeight);
+		networkTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, screenWidth - 750, screenHeight);
 		informationTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 400, 300);
 	}
 
@@ -55,7 +55,7 @@ public:
 
 	void update(int imagesSize)
 	{
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
 		SDL_RenderClear(renderer);
 		checkEvents(imagesSize);
 	}
@@ -66,44 +66,55 @@ public:
 
 		if (reDraw)
 		{
+			SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
 			SDL_SetRenderTarget(renderer, networkTexture);
+			SDL_RenderClear(renderer);
 			network->render(renderer);
+			// Clear the information texture
+	
 
 			// Draw the number on the right side of the screen
-			SDL_Rect dst = { screenWidth - (28 * 10), screenHeight / 2 - (28 * 5), 28 * 10, 28 * 10};
-
-			SDL_RenderCopy(renderer, number, nullptr, &dst);
 
 			// Make a string with "Confidence: " and the confidence * 100 followed by a percent sign
 			std::string confidenceString = "Confidence: " + std::to_string(confidence * 100) + "%";
 			std::string predictedNumberString = "Predicted Number: " + std::to_string(predictedNumber);
 
 			// Draw the confidence and cost below the number
+			SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
 			SDL_SetRenderTarget(renderer, informationTexture);
+			SDL_RenderClear(renderer);
+
 			SDL_Color color = { 255, 255, 255, 255 };
 			TTF_Font* font = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 35);
 			SDL_Surface* confidenceSurface = TTF_RenderText_Solid(font, confidenceString.c_str(), color);
 			SDL_Texture* confidenceTexture = SDL_CreateTextureFromSurface(renderer, confidenceSurface);
-			SDL_Rect confidenceRect = { screenWidth / 2 + 200, 100, 366, 66 };
+			SDL_Rect confidenceRect = { 0, 0, 366, 66 };
 			SDL_RenderCopy(renderer, confidenceTexture, nullptr, &confidenceRect);
 			SDL_FreeSurface(confidenceSurface);
 			SDL_DestroyTexture(confidenceTexture);
 
 			SDL_Surface* predictedNumberSurface = TTF_RenderText_Solid(font, predictedNumberString.c_str(), color);
 			SDL_Texture* predictedNumberTexture = SDL_CreateTextureFromSurface(renderer, predictedNumberSurface);
-			SDL_Rect predictedNumberRect = { screenWidth / 2 + 200, 200, 366, 66 };
+			SDL_Rect predictedNumberRect = { 0, 100, 366, 66 };
 			SDL_RenderCopy(renderer, predictedNumberTexture, nullptr, &predictedNumberRect);
 			SDL_FreeSurface(predictedNumberSurface);
 			SDL_DestroyTexture(predictedNumberTexture);
 		}
 
+		SDL_Rect dst = { screenWidth - (28 * 10), screenHeight / 2 - (28 * 5), 28 * 10, 28 * 10};
+		SDL_RenderCopy(renderer, number, nullptr, &dst);
+
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
 		SDL_SetRenderTarget(renderer, nullptr);
 
-		SDL_Rect networkRect = { 0, 0, screenWidth - 600, screenHeight };
-		SDL_Rect informationRect = { screenWidth / 2 + 200, 100, 400, 300 };
+		SDL_Rect networkRect = { 0, 0, screenWidth - 750, screenHeight };
+		SDL_Rect informationRect = { screenWidth / 2 + 50, 0, 400, 300 };
 
 		SDL_RenderCopy(renderer, networkTexture, nullptr, &networkRect);
 		SDL_RenderCopy(renderer, informationTexture, nullptr, &informationRect);
+		//SDL_RenderDrawRect(renderer, &informationRect);
+		//SDL_RenderDrawRect(renderer, &networkRect);
 
 		SDL_RenderPresent(renderer);
 	}

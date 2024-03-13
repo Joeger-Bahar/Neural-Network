@@ -41,12 +41,12 @@ bool ButtonManager::buttonPressed(const char* text, SDL_Rect rect)
 		// Renders the button halfway down and in the center of the screen
 		SDL_Rect buttonDimensions(rect.x, rect.y, rect.w, rect.h);
 
-		// Frees the text surface
-		SDL_FreeSurface(messageSurface);
-
 		// Create new button instance
 		m_Buttons.emplace(text, Button(currentButtonIndex, buttonDimensions, messageTexture, {0, 0, messageSurface->w, messageSurface->h}));
 		++currentButtonIndex;
+
+		// Frees the text surface
+		SDL_FreeSurface(messageSurface);
 	}
 
 	// Sets the render color to the background color
